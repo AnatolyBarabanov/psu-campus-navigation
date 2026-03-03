@@ -39,6 +39,14 @@
       "longitude": -75.109782,
       "floors": ["1"],
       "entrances": ["wp_spring_entrance"]
+    },
+    {
+      "id": "athletic",
+      "name": "Athletic Building",
+      "latitude": 40.114817,
+      "longitude": -75.111579,
+      "floors": ["1"],
+      "entrances": ["wp_ath_main_entrance"]
     }
   ],
 
