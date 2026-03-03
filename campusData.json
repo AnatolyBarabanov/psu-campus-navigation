@@ -136,7 +136,10 @@
     { "id": "wp_spring_entrance",     "building": "springhouse","floor": "1",      "label": "Springhouse Main Entrance",               "type": "entrance",  "latitude": 40.117489, "longitude": -75.109782, "x": 0, "y": 0, "qr_code": "QR_SPRING_ENTRANCE"         },
     { "id": "wp_spring_100_outside",  "building": "springhouse","floor": "1",      "label": "Room 100 - Outside Entrance",             "type": "entrance",  "latitude": 40.117470, "longitude": -75.109735, "x": 0, "y": 0, "qr_code": "QR_SPRING_100_OUTSIDE"      },
     { "id": "wp_spring_100_inside",   "building": "springhouse","floor": "1",      "label": "Room 100 - Inside Entrance",              "type": "entrance",  "latitude": 40.117480, "longitude": -75.109748, "x": 0, "y": 0, "qr_code": "QR_SPRING_100_INSIDE"       },
-    { "id": "wp_spring_101",          "building": "springhouse","floor": "1",      "label": "Room 101",                                "type": "classroom", "latitude": 40.117485, "longitude": -75.109767, "x": 0, "y": 0, "qr_code": "QR_SPRING_101"              }
+    { "id": "wp_spring_101",          "building": "springhouse","floor": "1",      "label": "Room 101",                                "type": "classroom", "latitude": 40.117485, "longitude": -75.109767, "x": 0, "y": 0, "qr_code": "QR_SPRING_101"              },
+
+    { "id": "wp_ath_main_entrance",   "building": "athletic", "floor": "1",        "label": "Athletic Building Main Entrance",         "type": "entrance",  "latitude": 40.114817, "longitude": -75.111579, "x": 0, "y": 0, "qr_code": "QR_ATH_F1_MAIN_ENTRANCE"    },
+    { "id": "wp_ath_basketball_court","building": "athletic", "floor": "1",        "label": "Basketball Court",                        "type": "recreation","latitude": 40.114532, "longitude": -75.111789, "x": 0, "y": 0, "qr_code": "QR_ATH_F1_BASKETBALL_COURT"   }
   ],
 
   "edges": [
@@ -223,7 +226,12 @@
 
     { "from": "wp_spring_100_outside", "to": "wp_spring_100_inside", "distance": 4.0,  "accessible": true  },
     { "from": "wp_spring_100_inside",  "to": "wp_spring_entrance",   "distance": 5.0,  "accessible": true  },
-    { "from": "wp_spring_entrance",    "to": "wp_spring_101",        "distance": 5.0,  "accessible": true  }
+    { "from": "wp_spring_entrance",    "to": "wp_spring_101",        "distance": 5.0,  "accessible": true  },
+
+    { "from": "wp_ath_main_entrance",   "to": "wp_rydal_main_entrance", "distance":75.0,  "accessible": true  },
+    { "from": "wp_rydal_main_entrance", "to": "wp_ath_main_entrance",   "distance": 75.0, "accessible": true  },
+    { "from": "wp_ath_main_entrance",   "to":"wp_ath_basketball_court", "distance": 10.0, "accessible": true  },
+    { "from": "wp_ath_basketball_court","to": "wp_ath_main_entrance",   "distance": 10.0, "accessible": true  }
   ],
 
   "rooms": [
@@ -301,7 +309,8 @@
     { "building": "rydal",       "room_number": "EE2",    "floor": "ground", "waypoint_id": "wp_rydal_ee2",         "room_name": "Room EE2",                    "type": "classroom" },
     { "building": "rydal",       "room_number": "101",    "floor": "1",      "waypoint_id": "wp_rydal_101",         "room_name": "Room 101",                    "type": "classroom" },
     { "building": "springhouse", "room_number": "100",    "floor": "1",      "waypoint_id": "wp_spring_100_inside", "room_name": "Room 100",                    "type": "classroom" },
-    { "building": "springhouse", "room_number": "101",    "floor": "1",      "waypoint_id": "wp_spring_101",        "room_name": "Room 101",                    "type": "classroom" }
+    { "building": "springhouse", "room_number": "101",    "floor": "1",      "waypoint_id": "wp_spring_101",        "room_name": "Room 101",                    "type": "classroom" },
+    { "building": "athletic",    "room_number": "court",  "floor": "1",      "waypoint_id": "wp_ath_basketball_court","room_name": "Basketball Court",          "type": "recreation" }
   ],
 
   "qrAnchors": [
@@ -386,6 +395,8 @@
     { "qr_id": "QR_SPRING_ENTRANCE",         "waypoint_id": "wp_spring_entrance",     "building": "springhouse", "floor": "1"      },
     { "qr_id": "QR_SPRING_100_OUTSIDE",      "waypoint_id": "wp_spring_100_outside",  "building": "springhouse", "floor": "1"      },
     { "qr_id": "QR_SPRING_100_INSIDE",       "waypoint_id": "wp_spring_100_inside",   "building": "springhouse", "floor": "1"      },
-    { "qr_id": "QR_SPRING_101",              "waypoint_id": "wp_spring_101",          "building": "springhouse", "floor": "1"      }
+    { "qr_id": "QR_SPRING_101",              "waypoint_id": "wp_spring_101",          "building": "springhouse", "floor": "1"      },
+    { "qr_id": "QR_ATH_F1_MAIN_ENTRANCE",    "waypoint_id": "wp_ath_main_entrance",   "building": "athletic",    "floor": "1"      },
+    { "qr_id": "QR_ATH_F1_BASKETBALL_COURT", "waypoint_id": "wp_ath_basketball_court","building": "athletic",    "floor": "1"      }
   ]
 }
