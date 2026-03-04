@@ -5,47 +5,60 @@ import {
   Text,
   TextInput,
   Pressable,
-  FlatList,
   StyleSheet,
   Alert,
+  Modal,
+  Platform,
+  Image,
+  SafeAreaView,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 
-import campusData from "../data/campusData.json";
+import { findRoom, getAllBuildings } from "../utils/findRoom";
 
-function byName(a, b) {
-  return String(a?.name || "").localeCompare(String(b?.name || ""));
-}
+const PSU = {
+  blue: "#001E44",     // Penn State blue vibe
+  blue2: "#0B3D91",    // accent blue
+  light: "#F5F7FA",
+  border: "#E6ECF2",
+  text: "#0B1220",
+  muted: "#5B6776",
+  white: "#FFFFFF",
+};
 
-export default function SearchPage() {
-  // Buildings: campusData.buildings[]
-  const buildings = useMemo(() => {
-    const arr = Array.isArray(campusData?.buildings)
-      ? [...campusData.buildings]
-      : [];
-    arr.sort(byName);
-    return arr;
-  }, []);
-
-  // Rooms: campusData.rooms[]
-  const rooms = useMemo(() => {
-    return Array.isArray(campusData?.rooms) ? campusData.rooms : [];
-  }, []);
-
+export default function SearchPage({ navigation }) {
+  const buildings = useMemo(() => getAllBuildings(), []);
   const [selectedBuildingId, setSelectedBuildingId] = useState(
     buildings[0]?.id || ""
   );
   const [roomNumber, setRoomNumber] = useState("");
-  const [results, setResults] = useState([]);
+  const [result, setResult] = useState(null);
   const [status, setStatus] = useState("");
+
+  // Dropdown modal state (iOS-friendly)
+  const [buildingModalOpen, setBuildingModalOpen] = useState(false);
+  const [pendingBuildingId, setPendingBuildingId] = useState(
+    buildings[0]?.id || ""
+  );
 
   const selectedBuilding = useMemo(
     () => buildings.find((b) => b.id === selectedBuildingId) || null,
     [buildings, selectedBuildingId]
   );
 
-  function findMatches() {
+  const openBuildingPicker = () => {
+    setPendingBuildingId(selectedBuildingId || buildings[0]?.id || "");
+    setBuildingModalOpen(true);
+  };
+
+  const confirmBuildingPicker = () => {
+    setSelectedBuildingId(pendingBuildingId);
+    setBuildingModalOpen(false);
+  };
+
+  const search = () => {
     setStatus("");
-    setResults([]);
+    setResult(null);
 
     if (!selectedBuildingId) {
       setStatus("Please select a building.");
@@ -58,265 +71,307 @@ export default function SearchPage() {
       return;
     }
 
-    const matches = rooms.filter(
-      (x) =>
-        String(x.building).toLowerCase() ===
-          String(selectedBuildingId).toLowerCase() &&
-        String(x.room_number).toLowerCase() === r.toLowerCase()
-    );
+    const found = findRoom(selectedBuildingId, r);
 
-    if (matches.length === 0) {
+    if (!found) {
       setStatus(
         `No results for room ${r} in ${selectedBuilding?.name || selectedBuildingId}.`
       );
       return;
     }
 
-    setResults(matches);
-  }
-
-  // RN-friendly “dropdown”: Prev/Next building selector
-  const buildingIndex = Math.max(
-    0,
-    buildings.findIndex((b) => b.id === selectedBuildingId)
-  );
-
-  const prevBuilding = () => {
-    if (buildingIndex <= 0) return;
-    setSelectedBuildingId(buildings[buildingIndex - 1].id);
+    setResult(found);
   };
 
-  const nextBuilding = () => {
-    if (buildingIndex >= buildings.length - 1) return;
-    setSelectedBuildingId(buildings[buildingIndex + 1].id);
-  };
-
-  // Placeholder buttons (no navigation yet)
   const placeholder = (name) =>
     Alert.alert("Coming Soon", `${name} screen will be implemented later.`);
 
   return (
-    <View style={s.page}>
-      <Text style={s.brand}>CAMPUS NAVIGATION</Text>
-      <Text style={s.title}>Where are you{"\n"}heading today?</Text>
-
-      {/* SEARCH SECTION */}
-      <View style={s.panel}>
-        <Text style={s.panelTitle}>Search Classroom</Text>
-
-        <Text style={s.label}>Building</Text>
-        <View style={s.dropdownRow}>
-          <Pressable
-            onPress={prevBuilding}
-            style={[s.smallBtn, buildingIndex === 0 && s.disabled]}
-            disabled={buildingIndex === 0}
-          >
-            <Text style={s.smallBtnText}>Prev</Text>
-          </Pressable>
-
-          <View style={s.dropdownBox}>
-            <Text style={s.dropdownText}>
-              {selectedBuilding ? `${selectedBuilding.name}` : "No buildings"}
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={nextBuilding}
-            style={[
-              s.smallBtn,
-              buildingIndex >= buildings.length - 1 && s.disabled,
-            ]}
-            disabled={buildingIndex >= buildings.length - 1}
-          >
-            <Text style={s.smallBtnText}>Next</Text>
-          </Pressable>
+    <SafeAreaView style={s.safe}>
+      <View style={s.page}>
+        {/* Header */}
+        <View style={s.header}>
+          <Text style={s.brand}>PENN STATE ABINGTON</Text>
+          <Text style={s.title}>Where are you{"\n"}heading today?</Text>
         </View>
 
-        <Text style={s.label}>Room number</Text>
-        <TextInput
-          style={s.input}
-          value={roomNumber}
-          onChangeText={setRoomNumber}
-          placeholder="e.g. 218, 132B, G04"
-          placeholderTextColor="#94a3b8"
-          autoCapitalize="characters"
-        />
+        {/* Main panel */}
+        <View style={s.panel}>
+          <Text style={s.panelTitle}>Search Classroom</Text>
 
-        <Pressable style={s.searchBtn} onPress={findMatches}>
-          <Text style={s.searchBtnText}>Search</Text>
-        </Pressable>
+          <Text style={s.label}>Building</Text>
+          <Pressable style={s.dropdownField} onPress={openBuildingPicker}>
+            <Text style={s.dropdownValue}>
+              {selectedBuilding?.name || "Select building"}
+            </Text>
+            <Text style={s.dropdownChevron}>▾</Text>
+          </Pressable>
 
-        {status ? <Text style={s.status}>{status}</Text> : null}
+          <Modal
+            visible={buildingModalOpen}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setBuildingModalOpen(false)}
+          >
+            <View style={s.modalBackdrop}>
+              <View style={s.modalSheet}>
+                <View style={s.modalHeader}>
+                  <Pressable onPress={() => setBuildingModalOpen(false)}>
+                    <Text style={s.modalCancel}>Cancel</Text>
+                  </Pressable>
 
-        {/* RESULTS + Navigate per result */}
-        {results.length > 0 && (
-          <View style={{ marginTop: 12 }}>
-            <Text style={s.resultsTitle}>Results</Text>
-            <FlatList
-              data={results}
-              keyExtractor={(item, idx) =>
-                `${item.building}-${item.room_number}-${idx}`
-              }
-              renderItem={({ item }) => (
-                <View style={s.resultCard}>
-                  <Text style={s.resultRoom}>{item.room_number}</Text>
-                  <Text style={s.resultMeta}>
-                    {item.room_name || "Room"} • Floor {item.floor} • Type:{" "}
-                    {item.type}
-                  </Text>
-                  <Text style={s.resultMeta2}>
-                    Waypoint: {item.waypoint_id}
-                    {item.capacity ? ` • Capacity: ${item.capacity}` : ""}
-                  </Text>
+                  <Text style={s.modalTitle}>Select Building</Text>
 
-                  <Pressable
-                    style={s.navigateBtn}
-                    onPress={() =>
-                      Alert.alert(
-                        "Navigate (Placeholder)",
-                        `Will navigate to ${selectedBuildingId} ${item.room_number}\nWaypoint: ${item.waypoint_id}`
-                      )
-                    }
-                  >
-                    <Text style={s.navigateBtnText}>Navigate</Text>
+                  <Pressable onPress={confirmBuildingPicker}>
+                    <Text style={s.modalDone}>Done</Text>
                   </Pressable>
                 </View>
-              )}
+
+                <Picker
+                  selectedValue={pendingBuildingId}
+                  onValueChange={(val) => setPendingBuildingId(val)}
+                  style={s.pickerIOS}
+                  itemStyle={s.pickerItemIOS}
+                >
+                  {buildings.map((b) => (
+                    <Picker.Item
+                      key={b.id}
+                      label={b.name}
+                      value={b.id}
+                      color={PSU.text}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+          </Modal>
+
+          <Text style={s.label}>Room number</Text>
+          <TextInput
+            style={s.input}
+            value={roomNumber}
+            onChangeText={setRoomNumber}
+            placeholder="e.g. 218, 132B, G04"
+            placeholderTextColor="#8B97A7"
+            autoCapitalize="characters"
+          />
+
+          <Pressable style={s.searchBtn} onPress={search}>
+            <Text style={s.searchBtnText}>Search</Text>
+          </Pressable>
+
+          {status ? <Text style={s.status}>{status}</Text> : null}
+
+          {result && <ResultCard result={result} />}
+        </View>
+
+        {/* Bottom menu */}
+        <View style={s.bottomMenu}>
+          <BottomItem
+            label="Map"
+            onPress={() => placeholder("Map View")}
+            icon={<Text style={s.menuIcon}>🗺️</Text>}
+          />
+
+          <View style={s.logoWrap}>
+            <Image
+              source={require("../assets/psu-logo.png")}
+              style={s.logo}
+              resizeMode="contain"
             />
           </View>
-        )}
-      </View>
 
-      {/* BUTTONS SECTION (Navigate removed, Scan QR removed) */}
-      <View style={s.grid}>
-        <ActionCard
-          title="Map View"
-          subtitle="Campus overview"
-          onPress={() => placeholder("Map View")}
-        />
-        <ActionCard
-          title="Buildings"
-          subtitle="Explore campus"
-          onPress={() => placeholder("Buildings")}
-        />
+          <BottomItem
+            label="Buildings"
+            onPress={() => navigation.navigate("Buildings")}
+            icon={<Text style={s.menuIcon}>🏛️</Text>}
+          />
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function ResultCard({ result }) {
+  const { room, building } = result;
+
+  return (
+    <View style={s.resultCard}>
+      <View style={s.resultHeaderRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.resultRoom}>
+            {(building?.name || room.building) + " " + room.room_number}
+          </Text>
+
+          <Text style={s.resultMeta}>
+            {room.room_name || "Room"} • Floor {room.floor} • {room.type}
+          </Text>
+
+          {room.capacity ? (
+            <Text style={s.resultMeta2}>Capacity: {room.capacity}</Text>
+          ) : null}
+        </View>
+
+        <Pressable
+          style={s.goBtn}
+          onPress={() =>
+            Alert.alert(
+              "Navigate (Placeholder)",
+              `Will navigate to ${(building?.name || room.building)} ${room.room_number}`
+            )
+          }
+        >
+          <Text style={s.goBtnText}>Go</Text>
+        </Pressable>
       </View>
     </View>
   );
 }
 
-function ActionCard({ title, subtitle, onPress }) {
+function BottomItem({ icon, label, onPress }) {
   return (
-    <Pressable style={s.card} onPress={onPress}>
-      <View style={s.iconStub} />
-      <Text style={s.cardTitle}>{title}</Text>
-      <Text style={s.cardSub}>{subtitle}</Text>
+    <Pressable style={s.bottomItem} onPress={onPress}>
+      {icon}
+      <Text style={s.bottomLabel}>{label}</Text>
     </Pressable>
   );
 }
 
 const s = StyleSheet.create({
-  page: {
-    flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    backgroundColor: "#fff",
+  safe: { flex: 1, backgroundColor: PSU.light },
+  page: { flex: 1, backgroundColor: PSU.light },
+
+  header: { paddingTop: 18, paddingHorizontal: 20 },
+  brand: {
+    color: PSU.blue,
+    fontWeight: "900",
+    letterSpacing: 1.5,
+    fontSize: 12,
   },
-  brand: { color: "#2b6cb0", fontWeight: "800", letterSpacing: 2, fontSize: 12 },
-  title: { marginTop: 10, fontSize: 40, fontWeight: "900", color: "#0f172a" },
+  title: {
+    marginTop: 10,
+    fontSize: 38,
+    fontWeight: "900",
+    color: PSU.text,
+  },
 
   panel: {
     marginTop: 18,
+    marginHorizontal: 20,
     borderWidth: 1,
-    borderColor: "#eef2f7",
+    borderColor: PSU.border,
     borderRadius: 18,
     padding: 16,
+    backgroundColor: PSU.white,
   },
-  panelTitle: { fontSize: 18, fontWeight: "900", color: "#0f172a" },
-  label: { marginTop: 12, marginBottom: 6, fontWeight: "800", color: "#334155" },
+  panelTitle: { fontSize: 18, fontWeight: "900", color: PSU.text },
+  label: { marginTop: 12, marginBottom: 6, fontWeight: "800", color: PSU.muted },
 
-  dropdownRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  smallBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+  dropdownField: {
+    height: 46,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  smallBtnText: { fontWeight: "900", color: "#0f172a" },
-  disabled: { opacity: 0.35 },
-
-  dropdownBox: {
-    flex: 1,
-    paddingVertical: 12,
+    borderColor: PSU.border,
     paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: PSU.white,
   },
-  dropdownText: { fontWeight: "800", color: "#0f172a" },
+  dropdownValue: { color: PSU.text, fontWeight: "800" },
+  dropdownChevron: { color: "#8B97A7", fontSize: 18, marginLeft: 10 },
 
   input: {
-    height: 44,
+    height: 46,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: PSU.border,
     paddingHorizontal: 12,
-    color: "#0f172a",
+    color: PSU.text,
+    backgroundColor: PSU.white,
   },
 
   searchBtn: {
     marginTop: 12,
-    backgroundColor: "#2563eb",
+    backgroundColor: PSU.blue,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
   },
-  searchBtnText: { color: "#fff", fontWeight: "900" },
+  searchBtnText: { color: PSU.white, fontWeight: "900" },
 
-  status: { marginTop: 10, color: "#0f172a" },
+  status: { marginTop: 10, color: PSU.text },
 
-  resultsTitle: {
-    marginTop: 4,
-    fontSize: 16,
-    fontWeight: "900",
-    color: "#0f172a",
-  },
   resultCard: {
+    marginTop: 12,
     borderWidth: 1,
-    borderColor: "#eef2f7",
+    borderColor: PSU.border,
     borderRadius: 14,
     padding: 12,
-    marginTop: 10,
+    backgroundColor: PSU.light,
   },
-  resultRoom: { fontSize: 16, fontWeight: "900", color: "#0f172a" },
-  resultMeta: { marginTop: 4, color: "#64748b" },
-  resultMeta2: { marginTop: 2, color: "#94a3b8" },
 
-  navigateBtn: {
-    marginTop: 10,
-    backgroundColor: "#2563eb",
-    paddingVertical: 10,
+  resultHeaderRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  resultRoom: { fontSize: 16, fontWeight: "900", color: PSU.text },
+  resultMeta: { marginTop: 4, color: PSU.muted },
+  resultMeta2: { marginTop: 6, color: "#6B7A8C" },
+
+  goBtn: {
+    width: 52,
+    height: 38,
     borderRadius: 10,
+    backgroundColor: PSU.blue2,
     alignItems: "center",
+    justifyContent: "center",
   },
-  navigateBtnText: { color: "#fff", fontWeight: "900" },
+  goBtnText: { color: PSU.white, fontWeight: "900" },
 
-  grid: {
-    marginTop: 18,
+  // Bottom menu
+  bottomMenu: {
+    marginTop: "auto",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    paddingBottom: 30,
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: 12,
+    borderTopWidth: 1,
+    borderTopColor: PSU.border,
+    backgroundColor: PSU.white,
   },
-  card: {
-    width: "47%",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#eef2f7",
-    padding: 18,
-    backgroundColor: "#fff",
+  bottomItem: { width: 90, alignItems: "center", justifyContent: "center" },
+  menuIcon: { fontSize: 22 },
+  bottomLabel: { marginTop: 4, fontSize: 12, fontWeight: "800", color: PSU.muted },
+
+  logoWrap: {
+    width: 90,
+    height: 52,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  iconStub: { width: 52, height: 52, borderRadius: 16, backgroundColor: "#eef2ff" },
-  cardTitle: { marginTop: 16, fontSize: 18, fontWeight: "900", color: "#0f172a" },
-  cardSub: { marginTop: 6, color: "#94a3b8" },
+  logo: { width: 70, height: 44 },
+
+  // Modal
+  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.35)", justifyContent: "flex-end" },
+  modalSheet: { backgroundColor: PSU.white, borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingBottom: 12 },
+  modalHeader: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: PSU.border,
+  },
+  modalTitle: { fontWeight: "900", color: PSU.text },
+  modalCancel: { color: PSU.muted, fontWeight: "800" },
+  modalDone: { color: PSU.blue2, fontWeight: "900" },
+
+  pickerIOS: { backgroundColor: PSU.white },
+  pickerItemIOS: {
+    color: PSU.text,
+    fontSize: 18,
+    height: Platform.OS === "ios" ? 200 : undefined,
+  },
 });
