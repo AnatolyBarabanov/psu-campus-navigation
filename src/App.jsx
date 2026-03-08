@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import SearchPage from "./pages/SearchPage.jsx";
 import Buildings from "./pages/Buildings.jsx";
 import BuildingDetail from "./pages/BuildingDetail.jsx";
+import NavigationPage from "./pages/NavigationPage.jsx";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
         <Route path="/" element={<SearchPage />} />
         <Route path="/buildings" element={<Buildings />} />
         <Route path="/buildings/:buildingId" element={<BuildingDetail />} />
+        <Route path="/navigate" element={<NavigationPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

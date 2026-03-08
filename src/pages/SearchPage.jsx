@@ -3,6 +3,7 @@ import React, { useMemo, useState } from "react";
 import BottomMenu from "../components/BottomMenu.jsx";
 import { findRoom, getAllBuildings } from "../utils/findRoom.js";
 import { findCourse } from "../utils/findCourse.js";
+import { useNavigate } from "react-router-dom";
 
 export default function SearchPage() {
   const buildings = useMemo(() => getAllBuildings(), []);
@@ -13,6 +14,7 @@ export default function SearchPage() {
 
   const [status, setStatus] = useState("");
   const [result, setResult] = useState(null);
+  const navigate = useNavigate();
 
   const selectedBuilding = useMemo(
     () => buildings.find((b) => b.id === buildingId) || null,
@@ -137,12 +139,13 @@ export default function SearchPage() {
 
               <button
                 className="goBtn"
-                onClick={() =>
-                  alert(
-                    "Navigate placeholder (web camera + QR later)\n\n" +
-                      showName(result)
-                  )
-                }
+  		onClick={() =>
+    		   navigate("/navigate", {
+      		      state: {
+        	         destination: result,
+            	      },
+        	   })
+  		}
               >
                 Go
               </button>
