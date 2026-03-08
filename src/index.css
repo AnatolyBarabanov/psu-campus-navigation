@@ -129,7 +129,162 @@ a{ color:inherit; text-decoration:none; }
   line-height: 1.5;
 }
 
+.mapHotspot{
+  position: absolute;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
 
+.hotspot-sutherland{ top: 28px; left: 54px; }
+.hotspot-woodland{ top: 62px; right: 62px; }
+.hotspot-lares{ top: 124px; left: 120px; }
+.hotspot-rydal{ top: 170px; right: 108px; }
+.hotspot-springhouse{ bottom: 42px; left: 84px; }
+.hotspot-athletic{ bottom: 26px; right: 62px; }
+
+.mapPin{
+  display: block;
+  font-size: 24px;
+}
+
+.mapLabel{
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--psu-blue);
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 10px;
+}
+
+.floorViewerTopBar{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.floorSelectorWrap{
+  width: 150px;
+}
+
+.floorViewerActions{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.smallBtn{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--psu-navy);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.zoomToolbar{
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.svgViewport{
+  margin-top: 14px;
+  width: 100%;
+  min-height: 420px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f7faff 0%, #edf3fb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svgCanvas{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.svgPlaceholder{
+  position: relative;
+  width: 320px;
+  height: 320px;
+  border-radius: 18px;
+  background: white;
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.svgPlaceholderTitle{
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  font-weight: 950;
+  color: var(--psu-navy);
+}
+
+.svgPlaceholderText{
+  position: absolute;
+  top: 40px;
+  left: 14px;
+  font-weight: 800;
+  color: var(--psu-blue);
+}
+
+.svgPlaceholderSub{
+  position: absolute;
+  top: 64px;
+  left: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.roomBox{
+  position: absolute;
+  border: 2px solid var(--psu-blue);
+  border-radius: 10px;
+  background: rgba(30,64,124,0.08);
+  color: var(--psu-navy);
+  font-size: 12px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roomA{ top: 110px; left: 18px; width: 88px; height: 70px; }
+.roomB{ top: 110px; right: 18px; width: 88px; height: 70px; }
+.roomC{ bottom: 18px; left: 18px; width: 88px; height: 70px; }
+.roomD{ bottom: 18px; right: 18px; width: 88px; height: 70px; }
+
+.hallwayBox{
+  position: absolute;
+  top: 120px;
+  left: 116px;
+  width: 88px;
+  height: 140px;
+  border-radius: 12px;
+  background: rgba(0,30,68,0.08);
+  color: var(--psu-navy);
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 
 

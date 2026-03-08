@@ -1,11 +1,9 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import BottomMenu from "../components/BottomMenu.jsx";
-import { getAllBuildings } from "../utils/findRoom.js";
 
 export default function MapView() {
   const navigate = useNavigate();
-  const buildings = useMemo(() => getAllBuildings(), []);
 
   return (
     <div className="page">
@@ -21,53 +19,52 @@ export default function MapView() {
       </div>
 
       <div className="panel">
-        <div className="panelTitle">Campus Overview</div>
+        <div className="panelTitle">Select a Building</div>
         <div className="resultMeta">
-          Interactive campus map and navigation overlay will appear here.
+          Tap a building on the map to open its floor viewer.
         </div>
 
         <div className="mapPlaceholder">
           <div className="mapGrid" />
 
-          <div className="mapLabel mapLabel1">Sutherland</div>
-          <div className="mapLabel mapLabel2">Woodland</div>
-          <div className="mapLabel mapLabel3">Lares</div>
-          <div className="mapLabel mapLabel4">Rydal</div>
-          <div className="mapLabel mapLabel5">Springhouse</div>
-          <div className="mapLabel mapLabel6">Athletics</div>
+          <button className="mapHotspot hotspot-sutherland" onClick={() => navigate("/map/sutherland")}>
+            <span className="mapPin">📍</span>
+            <span className="mapLabel">Sutherland</span>
+          </button>
 
-          <div className="mapPin pin1">📍</div>
-          <div className="mapPin pin2">📍</div>
-          <div className="mapPin pin3">📍</div>
-          <div className="mapPin pin4">📍</div>
-          <div className="mapPin pin5">📍</div>
-          <div className="mapPin pin6">📍</div>
-        </div>
+          <button className="mapHotspot hotspot-woodland" onClick={() => navigate("/map/woodland")}>
+            <span className="mapPin">📍</span>
+            <span className="mapLabel">Woodland</span>
+          </button>
 
-        <div style={{ marginTop: "16px" }}>
-          <div className="panelTitleSmall">Buildings on Map</div>
+          <button className="mapHotspot hotspot-lares" onClick={() => navigate("/map/lares")}>
+            <span className="mapPin">📍</span>
+            <span className="mapLabel">Lares</span>
+          </button>
 
-          <div className="mapBuildingList">
-            {buildings.map((building) => (
-              <button
-                key={building.id}
-                className="mapBuildingBtn"
-                onClick={() => navigate(`/buildings/${building.id}`)}
-              >
-                <span>{building.name}</span>
-                <span className="mapBuildingArrow">→</span>
-              </button>
-            ))}
-          </div>
+          <button className="mapHotspot hotspot-rydal" onClick={() => navigate("/map/rydal")}>
+            <span className="mapPin">📍</span>
+            <span className="mapLabel">Rydal</span>
+          </button>
+
+          <button className="mapHotspot hotspot-springhouse" onClick={() => navigate("/map/springhouse")}>
+            <span className="mapPin">📍</span>
+            <span className="mapLabel">Springhouse</span>
+          </button>
+
+          <button className="mapHotspot hotspot-athletic" onClick={() => navigate("/map/athletic")}>
+            <span className="mapPin">📍</span>
+            <span className="mapLabel">Athletics</span>
+          </button>
         </div>
 
         <div className="mapInfoBox">
-          <div className="panelTitleSmall">Planned Features</div>
+          <div className="panelTitleSmall">Planned Floor Viewer Features</div>
           <ul className="mapFeatureList">
-            <li>Interactive campus map with selectable buildings</li>
-            <li>Outdoor route guidance using GPS</li>
-            <li>Indoor wayfinding using QR-based positioning</li>
-            <li>SVG floor maps for each building level</li>
+            <li>Floor-by-floor SVG maps</li>
+            <li>Zoom in and out for room visibility</li>
+            <li>Navigation overlay for room directions</li>
+            <li>QR-based indoor progress updates</li>
           </ul>
         </div>
       </div>
