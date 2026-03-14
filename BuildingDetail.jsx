@@ -1,117 +1,116 @@
-// src/pages/BuildingDetail.jsx
 import React, { useMemo } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { useNavigate, useParams } from "react-router-dom";
+import BottomMenu from "../components/BottomMenu.jsx";
 import campusData from "../data/campusData.json";
+import { countRoomsInBuilding } from "../utils/findRoom.js";
 
-const BUILDING_DESCRIPTIONS = {
+const BUILDING_DETAILS = {
   sutherland:
     "A historic building designed by Julian Abele, featuring classrooms, academic advising, a tutoring center, and a lecture hall in a converted indoor swimming pool.",
-  lares:
-    "Houses the cafeteria, bookstore, and Student Affairs.",
+  lares: "Houses the cafeteria, bookstore, and Student Affairs.",
   lionsgate:
     "Opened in 2017, this is the main residential facility, offering 400 beds in apartment-style units.",
-  woodland:
-    "A central campus building with offices and academic space.",
-  springhouse:
-    "Contains classrooms and the Collegiate Recovery Program.",
-  rydal:
-    "Used for classrooms and campus security.",
-  athletic:
-    "Features facilities for campus recreation and teams.",
+  woodland: "A central campus building with offices and academic space.",
+  springhouse: "Contains classrooms and the Collegiate Recovery Program.",
+  rydal: "Used for classrooms and campus security.",
+  athletic: "Features facilities for campus recreation and teams."
 };
 
-export default function BuildingDetail({ route }) {
-  const { buildingId } = route.params || {};
+export default function BuildingDetail() {
+  const nav = useNavigate();
+  const { buildingId } = useParams();
 
   const building = useMemo(() => {
-    const all = Array.isArray(campusData?.buildings) ? campusData.buildings : [];
-    return (
-      all.find(
-        (b) =>
-          String(b.id).toLowerCase() === String(buildingId || "").toLowerCase()
-      ) || null
-    );
+    const bid = String(buildingId || "").toLowerCase();
+    return (campusData.buildings || []).find((b) => String(b.id).toLowerCase() === bid) || null;
   }, [buildingId]);
 
-  const description =
-    BUILDING_DESCRIPTIONS[String(buildingId || "").toLowerCase()] ||
-    "Information coming soon.";
+  const roomsCount = building ? countRoomsInBuilding(building.id) : 0;
 
   if (!building) {
     return (
-      <View style={s.page}>
-        <Text style={s.title}>Building not found</Text>
-        <Text style={s.sub}>No data for: {String(buildingId)}</Text>
-      </View>
+      <div className="page">
+        <div className="panel">
+          <div className="panelTitle">Building not found</div>
+          <button className="primaryBtn" onClick={() => nav("/buildings")}>
+            Back to Buildings
+          </button>
+        </div>
+        <BottomMenu />
+      </div>
     );
   }
+  	
+  const floors = building.floors || [];
+  const entrances = building.entrances || [];
 
   return (
-    <ScrollView style={s.page} contentContainerStyle={{ paddingBottom: 30 }}>
-      <Text style={s.title}>{building.name}</Text>
-      <Text style={s.sub}>ID: {building.id}</Text>
+    <div className="page">
+      <div className="brandRow" style={{ justifyContent: "space-between" }}>
+        <div className="brandRow">
+          <div className="psuBadge">PSU</div>
+          <div className="brand">PENN STATE ABINGTON</div>
+        </div>
 
-      <View style={s.section}>
-        <Text style={s.sectionTitle}>About This Building</Text>
-        <Text style={s.row}>{description}</Text>
-      </View>
+        <button
+          className="pill"
+          style={{ border: "none", cursor: "pointer" }}
+          onClick={() => nav("/buildings")}
+        >
+          ← Back
+        </button>
+      </div>
 
-      <View style={s.section}>
-        <Text style={s.sectionTitle}>Location</Text>
-        <Text style={s.row}>Latitude: {building.latitude ?? "N/A"}</Text>
-        <Text style={s.row}>Longitude: {building.longitude ?? "N/A"}</Text>
-      </View>
+      <div className="title" style={{ fontSize: 30 }}>
+        {building.name}
+      </div>
 
-      <View style={s.section}>
-        <Text style={s.sectionTitle}>Floors</Text>
-        {Array.isArray(building.floors) && building.floors.length > 0 ? (
-          building.floors.map((f) => (
-            <Text key={String(f)} style={s.bullet}>
-              • {String(f)}
-            </Text>
-          ))
-        ) : (
-          <Text style={s.row}>N/A</Text>
-        )}
-      </View>
+      <div className="panel" style={{ marginTop: 14 }}>
+	<img
+    	   src={`/images/buildings/${building.id}.jpg`}
+           style={{width:"100%", borderRadius:"10px"}}
+        />
+        <div className="panelTitle">Overview</div>
+        <div className="cardSub" style={{ marginTop: 6 }}>
+          {BUILDING_DETAILS[building.id] || "Building details will be expanded later."}
+        </div>
 
-      <View style={s.section}>
-        <Text style={s.sectionTitle}>Entrances (Waypoints)</Text>
-        {Array.isArray(building.entrances) && building.entrances.length > 0 ? (
-          building.entrances.map((e) => (
-            <Text key={String(e)} style={s.bullet}>
-              • {String(e)}
-            </Text>
-          ))
-        ) : (
-          <Text style={s.row}>N/A</Text>
-        )}
-      </View>
+        <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <span className="pill">Floors: {floors.length}</span>
+          <span className="pill">Entrances: {entrances.length}</span>
+          <span className="pill">Rooms: {roomsCount}</span>
+        </div>
 
-      <View style={s.section}>
-        <Text style={s.sectionTitle}>Placeholder</Text>
-        <Text style={s.row}>
-          Floor selection + SVG floor maps will be added later.
-        </Text>
-      </View>
-    </ScrollView>
+        <div style={{ marginTop: 14 }}>
+          <div className="panelTitle">Location</div>
+          <div className="resultMeta2">
+            Latitude: {building.latitude} • Longitude: {building.longitude}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <div className="panelTitle">Floors</div>
+          <div className="resultMeta2">
+            {floors.length ? floors.join(", ") : "No floor data yet."}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <div className="panelTitle">Entrances</div>
+          <div className="resultMeta2">
+            {entrances.length ? entrances.join(", ") : "No entrance data yet."}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14 }}>
+          <div className="panelTitle">What’s next</div>
+          <div className="resultMeta2">
+            Later we can add floor SVGs, indoor navigation, and QR anchor scanning.
+          </div>
+        </div>
+      </div>
+
+      <BottomMenu />
+    </div>
   );
 }
-
-const s = StyleSheet.create({
-  page: { flex: 1, padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 28, fontWeight: "900", color: "#0f172a" },
-  sub: { marginTop: 6, color: "#64748b" },
-
-  section: {
-    marginTop: 18,
-    borderWidth: 1,
-    borderColor: "#eef2f7",
-    borderRadius: 16,
-    padding: 14,
-    backgroundColor: "#fff",
-  },
-  sectionTitle: { fontSize: 16, fontWeight: "900", color: "#0f172a" },
-  row: { marginTop: 8, color: "#334155", lineHeight: 20 },
-  bullet: { marginTop: 8, color: "#334155" },
-});

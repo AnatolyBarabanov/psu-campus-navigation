@@ -1,113 +1,73 @@
 import React, { useMemo } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-} from "react-native";
+import { useNavigate } from "react-router-dom";
+import BottomMenu from "../components/BottomMenu.jsx";
+import { getAllBuildings, countRoomsInBuilding } from "../utils/findRoom.js";
 
-import { getAllBuildings } from "../utils/findRoom";
-import campusData from "../data/campusData.json";
-
-const IMAGE_BY_BUILDING_ID = {
-  sutherland: "https://upload.wikimedia.org/wikipedia/commons/3/3b/Sutherland_Building%2C_Penn_State_Abington_02.JPG",
-  woodland: "https://upload.wikimedia.org/wikipedia/commons/5/59/Woodland_Building%2C_Penn_State_Abington_01.JPG",
-  lares: "https://upload.wikimedia.org/wikipedia/commons/d/d5/Lares_Union_Building%2C_Penn_State_Abington_03.JPG",
-  rydal: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Rydal_Building%2C_Penn_State_Abington_01.JPG",
-  springhouse: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Springhouse%2C_Penn_State_Abington_02.JPG",
+const BUILDING_BLURBS = {
+  sutherland:
+    "Historic Julian Abele building with classrooms, advising, tutoring, and a lecture hall in a converted pool.",
+  lares: "Houses the cafeteria, bookstore, and Student Affairs.",
+  woodland: "Central campus building with offices and academic space.",
+  springhouse: "Contains classrooms and the Collegiate Recovery Program.",
+  rydal: "Used for classrooms and campus security.",
+  athletic: "Facilities for campus recreation and teams.",
+  lionsgate: "Student apartments (opened 2017), apartment-style living with ~400 beds."
 };
 
-function getImage(id) {
-  return (
-    IMAGE_BY_BUILDING_ID[id] ||
-    "https://upload.wikimedia.org/wikipedia/commons/3/37/Athletic_Building%2C_Penn_State_Abington.JPG"
-  );
-}
-
-function countEntrancesForBuilding(buildingId) {
-  const bid = String(buildingId || "").toLowerCase();
-  const waypoints = Array.isArray(campusData?.waypoints) ? campusData.waypoints : [];
-
-  // Count waypoint entries that represent entrances for this building
-  return waypoints.filter(
-    (w) =>
-      String(w.building || "").toLowerCase() === bid &&
-      String(w.type || "").toLowerCase() === "entrance"
-  ).length;
-}
-
-function countRoomsForBuilding(buildingId) {
-  const bid = String(buildingId || "").toLowerCase();
-  const rooms = Array.isArray(campusData?.rooms) ? campusData.rooms : [];
-  return rooms.filter((r) => String(r.building || "").toLowerCase() === bid).length;
-}
-
-export default function Buildings({ navigation }) {
+export default function Buildings() {
+  const nav = useNavigate();
   const buildings = useMemo(() => getAllBuildings(), []);
-  const demoBuildings = useMemo(() => buildings.slice(0, 6), [buildings]);
 
   return (
-    <View style={s.page}>
-      <Text style={s.title}>Campus Buildings</Text>
-      <Text style={s.subtitle}>Tap a building to view detailed info.</Text>
+    <div className="page">
+      <div className="brandRow">
+        <div className="psuBadge">PSU</div>
+        <div className="brand">PENN STATE ABINGTON</div>
+      </div>
 
-      <FlatList
-        data={demoBuildings}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={{ gap: 16 }}
-        contentContainerStyle={{ gap: 16, marginTop: 20, paddingBottom: 30 }}
-        renderItem={({ item }) => {
-          const entranceCount = countEntrancesForBuilding(item.id);
-          const roomCount = countRoomsForBuilding(item.id);
+      <div className="title" style={{ fontSize: 30 }}>
+        Campus
+        <br />
+        Buildings
+      </div>
 
-          return (
-            <Pressable
-              style={s.card}
-              onPress={() =>
-                navigation.navigate("BuildingDetail", { buildingId: item.id })
-              }
-            >
-              <Image source={{ uri: getImage(item.id) }} style={s.image} />
+      <div className="panel" style={{ marginTop: 14 }}>
+        <div className="panelTitle">Tap a building</div>
+        <div className="grid">
+          {buildings.map((b) => {
+            const roomsCount = countRoomsInBuilding(b.id);
+            const floorsCount = (b.floors || []).length;
+            const entrancesCount = (b.entrances || []).length;
 
-              <View style={s.info}>
-                <Text style={s.name} numberOfLines={1}>
-                  {item.name}
-                </Text>
+            return (
+              <div
+                key={b.id}
+                className="card"
+                onClick={() => nav(`/buildings/${b.id}`)}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="cardTop">
+                  <div className="thumb">{b.name.split(" ")[0].slice(0, 2).toUpperCase()}</div>
+                  <span className="pill">Info</span>
+                </div>
 
-                <Text style={s.meta}>
-                  Floors: {Array.isArray(item.floors) ? item.floors.length : "N/A"}
-                </Text>
+                <div className="cardTitle">{b.name}</div>
+                
 
-                <Text style={s.meta}>Entrances: {entranceCount || "N/A"}</Text>
+                <div className="kv">
+                  <div>Floors: <b>{floorsCount}</b></div>
+                  <div>Entrances: <b>{entrancesCount}</b></div>
+                  <div>Rooms: <b>{roomsCount}</b></div>
+                  <div>GPS: <b>Yes</b></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-                <Text style={s.meta}>Rooms: {roomCount || "N/A"}</Text>
-              </View>
-            </Pressable>
-          );
-        }}
-      />
-    </View>
+      <BottomMenu />
+    </div>
   );
 }
-
-const s = StyleSheet.create({
-  page: { flex: 1, padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 28, fontWeight: "900", color: "#0f172a" },
-  subtitle: { marginTop: 6, color: "#64748b" },
-
-  card: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#eef2f7",
-    borderRadius: 16,
-    overflow: "hidden",
-    backgroundColor: "#fff",
-  },
-  image: { width: "100%", height: 120 },
-  info: { padding: 12 },
-  name: { fontSize: 16, fontWeight: "900", color: "#0f172a" },
-  meta: { marginTop: 4, fontSize: 12, color: "#64748b" },
-});
