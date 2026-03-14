@@ -25,7 +25,12 @@ export default function MapView() {
         </div>
 
         <div className="mapPlaceholder">
-          <div className="mapGrid" />
+
+          <img
+            src="/images/psu-abington-map.jpg"
+            className="campusMapImage"
+            alt="Penn State Abington Campus Map"
+          />
 
           <button className="mapHotspot hotspot-sutherland" onClick={() => navigate("/map/sutherland")}>
             <span className="mapPin">📍</span>
